@@ -59,6 +59,7 @@
 <https://github.com/LinaraSafiullina/data.analytics.jr/blob/d10246ac0280cad32ca39b9156ef2b8a8f000e9a/Project%203%20%D0%97%D0%B0%D0%BF%D1%80%D0%BE%D1%81%20SQL.rtf>
 
 Визуализация
+<https://github.com/LinaraSafiullina/data.analytics.jr/blob/3cb6c80d9d283b238517161870f1bf9aab2045f0/Project%203%20%D0%92%D0%B8%D0%B7%D1%83%D0%B0%D0%BB%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F.xlsx>
 
 Как связаться со мной
 =====
