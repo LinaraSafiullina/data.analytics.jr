@@ -1,0 +1,87 @@
+{\rtf1\ansi\ansicpg1251\cocoartf2638
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 with first_payments as \
+(select skyeng_db.payments.user_id, \
+      min (date_trunc('day',skyeng_db.payments.transaction_datetime)) as first_payment_date\
+from skyeng_db.payments\
+where status_name = 'success'\
+group by skyeng_db.payments.user_id\
+order by first_payment_date\
+),\
+all_dates as\
+(select distinct date_trunc('day', skyeng_db.classes.class_start_datetime) as dt\
+from skyeng_db.classes\
+where date_trunc('day', skyeng_db.classes.class_start_datetime) between '2016-01-01' and '2016-12-31'\
+),\
+payments_by_dates as\
+(select payments.user_id,\
+ date_trunc ('day', transaction_datetime) as payment_date,\
+  sum(classes) as transaction_balance_change\
+from skyeng_db.payments\
+where status_name = 'success'\
+group by payments.user_id, date_trunc ('day', transaction_datetime)\
+order by payments.user_id\
+),\
+all_dates_by_user as\
+(select user_id, \
+     dt\
+from all_dates\
+join first_payments on all_dates.dt >= first_payments.first_payment_date\
+order by user_id, dt\
+),\
+classes_by_dates as\
+(select user_id, \
+        date_trunc ('day', class_start_datetime) as class_date, \
+        count(id_class)*('-1') as classes \
+from skyeng_db.classes\
+where class_status in ('success','failed_by_student')\
+and class_type != 'trial'\
+group by 1,2\
+),\
+payments_by_dates_cumsum as \
+(select all_dates_by_user.user_id,\
+        all_dates_by_user.dt,\
+        payments_by_dates.transaction_balance_change,\
+        sum (case when payments_by_dates.transaction_balance_change is not null \
+        then payments_by_dates.transaction_balance_change else 0 end) \
+        over (partition by all_dates_by_user.user_id order by all_dates_by_user.dt) as transaction_balance_change_cs\
+from all_dates_by_user\
+left join payments_by_dates on all_dates_by_user.user_id = payments_by_dates.user_id\
+and all_dates_by_user.dt = payments_by_dates.payment_date\
+),\
+classes_by_dates_cumsum as\
+(select all_dates_by_user.user_id,\
+        all_dates_by_user.dt,\
+        classes_by_dates.classes,\
+        sum (case when classes_by_dates.classes is not null \
+        then classes_by_dates.classes else 0 end) \
+        over (partition by all_dates_by_user.user_id order by all_dates_by_user.dt) as classes_cs\
+from all_dates_by_user\
+left join classes_by_dates on all_dates_by_user.user_id = classes_by_dates.user_id\
+and all_dates_by_user.dt = classes_by_dates.class_date), \
+balances as\
+(select payments_by_dates_cumsum.user_id,\
+       payments_by_dates_cumsum.dt,\
+       payments_by_dates_cumsum.transaction_balance_change,\
+       payments_by_dates_cumsum.transaction_balance_change_cs,\
+       classes_by_dates_cumsum.classes,\
+       classes_by_dates_cumsum.classes_cs,\
+       payments_by_dates_cumsum.transaction_balance_change_cs + classes_by_dates_cumsum.classes_cs as balance\
+from payments_by_dates_cumsum\
+join classes_by_dates_cumsum on classes_by_dates_cumsum.user_id = payments_by_dates_cumsum.user_id\
+and classes_by_dates_cumsum.dt = payments_by_dates_cumsum.dt\
+)\
+select dt,\
+    sum (transaction_balance_change) as sum_transaction_balance_change,\
+    sum (transaction_balance_change_cs) as sum_transaction_balance_change_cs,\
+    sum (classes) as sum_classes,\
+    sum (classes_cs) as sum_classes_cs,\
+    sum (balance) as sum_balance\
+from balances\
+group by dt\
+order by dt}
