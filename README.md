@@ -76,8 +76,9 @@
 * Построила калькуляторы Excel в зависимости от исхода теста (положительный, отрицательный, нейтральный).
 
 A/B Тест и графики
-
+<https://github.com/LinaraSafiullina/data.analytics.jr/blob/ec6d0be5ab2def1cf0fc4efe1fd1a4505bb33057/Project%204%20Python.ipynb>
 Калькуляторы
+<https://github.com/LinaraSafiullina/data.analytics.jr/blob/ec6d0be5ab2def1cf0fc4efe1fd1a4505bb33057/Project%204%20%D0%9A%D0%B0%D0%BB%D1%8C%D0%BA%D1%83%D0%BB%D1%8F%D1%82%D0%BE%D1%80%D1%8B.xlsx>
 
 Как связаться со мной
 =====
